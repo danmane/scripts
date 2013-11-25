@@ -56,7 +56,6 @@ def gen_backport_message(cmessage):
     p4 = "NOCR: ?\S* ?\n"
     patterns = [p1, p2, p3, p4]
     search = "|".join(patterns)
-    # print search
     num_results = len(re.findall(search, cmessage))
     if num_results == 0:
         print "Error: no valid review string found. Amend the commit message yourself, then push"
@@ -67,7 +66,6 @@ def gen_backport_message(cmessage):
     return re.sub(search, "NOCR: backport\n", cmessage)
 
 def call_and_exit_on_failure(args):
-    # return
     exitVal = subprocess.call(args)
     if exitVal != 0:
         print "There were problems with this command:"
