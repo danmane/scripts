@@ -1,3 +1,23 @@
+"""
+This script automates the process of backporting a commit to a different branch. It's
+particularly written to work with Palantir's conventions for code review, etc.
+How it works:
+Checkout a branch where the commit you want to backport is the top commit.
+Run easybackport.py from within the git directory. It will do the following steps:
+    1. Prompt to make sure it is backporting the right thing
+    2. Checkout a new branch named "bp-{SHORT_COMMIT_HASH}-to-{BACKPORT_BRANCH}"
+            off origin/BACKPORT_BRANCH
+    3. Cherry pick your commit
+    4. Try to generate a new commit message, replacing the review string
+            (AUTOREVIEW, CRR:, CR:, NOCR:, etc) with NOCR: backport
+    5. Amend the commit to use the new commit message
+    6. Push the amended backport commit to Gerrit
+If anything unexpected happens, it gives up and lets you clean up the mess. :)
+
+Right now it always backports to 4.1.1-proposed, would not take long to add in argparse
+to use custom branch names if that becomes useful.
+"""
+
 import subprocess, re
 
 BACKPORT_BRANCH_NAME = "4.1.1-proposed"
@@ -15,11 +35,11 @@ def main():
     if backport:
         new_name = "bp-" + chash[0:5] + "-to-" + BACKPORT_BRANCH_NAME
         upstream = "origin/" + BACKPORT_BRANCH_NAME
-        safeCall(["git", "checkout", "-b", new_name, upstream])
-        safeCall(["git", "cherry-pick", chash])
+        call_and_exit_on_failure(["git", "checkout", "-b", new_name, upstream])
+        call_and_exit_on_failure(["git", "cherry-pick", chash])
         new_message = gen_backport_message(cmessage)
-        safeCall(["git", "commit", "--amend", "-m", new_message])
-        safeCall(["git", "push", "origin", PUSH_LOCATION])
+        call_and_exit_on_failure(["git", "commit", "--amend", "-m", new_message])
+        call_and_exit_on_failure(["git", "push", "origin", PUSH_LOCATION])
 
 def gen_backport_message(cmessage):
     """Given the commit message, construct a new message, replacing the review string
@@ -46,7 +66,7 @@ def gen_backport_message(cmessage):
         raise ValueError
     return re.sub(search, "NOCR: backport\n", cmessage)
 
-def safeCall(args):
+def call_and_exit_on_failure(args):
     # return
     exitVal = subprocess.call(args)
     if exitVal != 0:
