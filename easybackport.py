@@ -31,8 +31,7 @@ def main():
     print "======================================"
     print commit
     print "======================================"
-    backport = get_yes_no()
-    if backport:
+    if get_yes_no_input():
         new_name = "bp-" + chash[0:5] + "-to-" + BACKPORT_BRANCH_NAME
         upstream = "origin/" + BACKPORT_BRANCH_NAME
         call_and_exit_on_failure(["git", "checkout", "-b", new_name, upstream])
@@ -72,15 +71,16 @@ def call_and_exit_on_failure(args):
         print " ".join(args)
         exit(exitVal)
 
-def get_yes_no():
-    print "y/n:",
-    response = raw_input()
-    response = response.strip().lower()
-    if response == "y" or response == "yes":
-        return True
-    elif response == "n" or response == "no":
-        return False
-    else:
-        return get_yes_no()
+def get_yes_no_input():
+    while True:
+        print "y/n:",
+        response = raw_input()
+        response = response.strip().lower()
+        if response == "y" or response == "yes":
+            return True
+        elif response == "n" or response == "no":
+            return False
+        else:
+            print "You need to type (y)es or (n)o..."
 
 main()
