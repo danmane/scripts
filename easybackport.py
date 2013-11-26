@@ -20,7 +20,7 @@ to use custom branch names if that becomes useful.
 
 import subprocess, re
 
-BACKPORT_BRANCH_NAME = "4.1.1-proposed"
+BACKPORT_BRANCH_NAME = "4.3.2"
 PUSH_LOCATION = "HEAD:refs/for/" + BACKPORT_BRANCH_NAME
 
 def main():
