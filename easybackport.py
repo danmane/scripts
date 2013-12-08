@@ -18,9 +18,12 @@ Right now it always backports to 4.1.1-proposed, would not take long to add in a
 to use custom branch names if that becomes useful.
 """
 
-import subprocess, re
+import subprocess, re, sys
 
-BACKPORT_BRANCH_NAME = "4.3.2"
+if len(sys.argv) > 1:
+    BACKPORT_BRANCH_NAME = sys.argv[1]
+else:
+    BACKPORT_BRANCH_NAME = "4.3.2"
 PUSH_LOCATION = "HEAD:refs/for/" + BACKPORT_BRANCH_NAME
 
 def main():
