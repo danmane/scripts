@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import subprocess, re, sys, os, json
 
 # if (len(sys.argv) > 1):
@@ -7,24 +8,51 @@ import subprocess, re, sys, os, json
 # else:
 
 def main():
+  print("main")
   contents = subprocess.check_output(\
       ["git", "log", "--shortstat", "--no-merges", '--format="%ae %ad"'])
 
   contents = contents.split("\n")
-  num_commits = len(contents) / 3
+  contents = filter(lambda x: x != "", contents)
+  commits = get_commits(contents)
 
-  commits = [contents[i*3:i*3+3] for i in xrange(num_commits)]
+  print(json.dumps([safe_parse_commit(c) for c in commits], indent=2))
 
-  print(json.dumps([parse_commit(c) for c in commits]))
+def get_commits(lines):
+  current_commit = []
+  commits = []
+  for l in lines:
+    if re.match("\"\w+@\w+\.\w+", l):
+      if len(current_commit) == 2:
+        commits.append(current_commit)
+      current_commit = [l]
+    else:
+      current_commit.append(l)
+  if len(current_commit) == 2:
+    commits.append(current_commit)
+
+  return commits
+
+
+def safe_parse_commit(c):
+  try:
+    return parse_commit(c)
+  except Exception as e:
+    print(e)
+    print(c)
+    print("\n=========\n")
+    return {}
 
 def parse_commit(c):
   out = {}
   topline = c[0]
+  assert(topline[0] == '"')
   topline = topline[1:-1]
-  botline = c[2]
+  botline = c[1]
   email, _, date = topline.partition(" ")
   # print("email", email)
   out["email"] = email
+  out["name"] = email.partition('"')[0]
   # print("date", date)
   out["date"] = date
   botline = botline.split(",")
