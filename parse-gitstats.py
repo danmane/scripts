@@ -8,7 +8,6 @@ import subprocess, re, sys, os, json
 # else:
 
 def main():
-  print("main")
   contents = subprocess.check_output(\
       ["git", "log", "--shortstat", "--no-merges", '--format="%ae %ad"'])
 
@@ -52,7 +51,7 @@ def parse_commit(c):
   email, _, date = topline.partition(" ")
   # print("email", email)
   out["email"] = email
-  out["name"] = email.partition('"')[0]
+  out["name"] = email.partition('@')[0]
   # print("date", date)
   out["date"] = date
   botline = botline.split(",")
