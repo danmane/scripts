@@ -9,7 +9,7 @@ import subprocess, re, sys, os, json
 
 def main():
   contents = subprocess.check_output(\
-      ["git", "log", "--shortstat", "--no-merges", '--format="%ae %ad"'])
+      ["git", "log", "--shortstat", "--no-merges", '--format="%ae %ad"', '--reverse'])
 
   contents = contents.split("\n")
   contents = filter(lambda x: x != "", contents)
