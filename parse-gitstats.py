@@ -17,7 +17,7 @@ def main():
   # changesByName = groupAndMergeChangesByAggregator(changes, "name")
   out = {"commits": commits, "files": changesByFile, "directory": changesByDirectory, "extension": changesByExtension}
 
-  print(json.dumps(out, indent=2))
+  print(json.dumps(out))
 
 def groupBy(ls, keyFn):
   m = {}
