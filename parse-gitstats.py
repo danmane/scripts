@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import subprocess, re, json, itertools, pdb
+import subprocess, re, json, itertools, pdb, datetime
 
 def main():
   contents = subprocess.check_output(\
@@ -10,14 +10,29 @@ def main():
   fullstr = headstr + r"((?:" + linestr + r")*)"
 
   commits = [parse_commit(cGroup) for cGroup in re.finditer(fullstr, contents)]
-  changes = [c for commit in commits for c in commit["changes"]]
+  first_commit = commits[0]
+  starting_date = datetime.datetime.strptime(first_commit["date"][:-6], "%c")
+  for c in commits:
+    cdate = datetime.datetime.strptime(c["date"][:-6], "%c")
+    delta = cdate - starting_date
+    seconds = delta.total_seconds()
+    days = seconds / 60 / 60 / 24
+    c["day_delta"] = days
+
+  commits = sorted(commits, key=lambda c: c["day_delta"])
+
+  i=0
+  for c in commits:
+    c["commit_number"] = i
+    i+=1
+  # changes = [c for commit in commits for c in commit["changes"]]
   # changesByFile = groupAndMergeChangesByAggregator(changes, "fileName", ["fileName", "directory", "extension"])
   # changesByDirectory = groupAndMergeChangesByAggregator(changes, "directory")
   # changesByExtension = groupAndMergeChangesByAggregator(changes, "extension")
   # # changesByName = groupAndMergeChangesByAggregator(changes, "name")
   # out = {"commits": commits, "files": changesByFile, "directory": changesByDirectory, "extension": changesByExtension}
 
-  print(json.dumps(commits))
+  print(json.dumps(commits, indent=2))
 
 def groupBy(ls, keyFn):
   m = {}
