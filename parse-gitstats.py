@@ -11,13 +11,13 @@ def main():
 
   commits = [parse_commit(cGroup) for cGroup in re.finditer(fullstr, contents)]
   changes = [c for commit in commits for c in commit["changes"]]
-  changesByFile = groupAndMergeChangesByAggregator(changes, "fileName", ["fileName", "directory", "extension"])
-  changesByDirectory = groupAndMergeChangesByAggregator(changes, "directory")
-  changesByExtension = groupAndMergeChangesByAggregator(changes, "extension")
-  # changesByName = groupAndMergeChangesByAggregator(changes, "name")
-  out = {"commits": commits, "files": changesByFile, "directory": changesByDirectory, "extension": changesByExtension}
+  # changesByFile = groupAndMergeChangesByAggregator(changes, "fileName", ["fileName", "directory", "extension"])
+  # changesByDirectory = groupAndMergeChangesByAggregator(changes, "directory")
+  # changesByExtension = groupAndMergeChangesByAggregator(changes, "extension")
+  # # changesByName = groupAndMergeChangesByAggregator(changes, "name")
+  # out = {"commits": commits, "files": changesByFile, "directory": changesByDirectory, "extension": changesByExtension}
 
-  print(json.dumps(out))
+  print(json.dumps(commits))
 
 def groupBy(ls, keyFn):
   m = {}
@@ -56,8 +56,11 @@ def parse_commit(cGroup):
   line_grouper = r"(\d+)\t(\d+)\t([^\n]+)\n"
   changes = [parse_line(lGroup) for lGroup in re.finditer(line_grouper, g[2])]
   byDirectory = groupAndMergeChangesByAggregator(changes, "directory")
-  byExtension = groupAndMergeChangesByAggregator(changes, "extension")
-  return {"name": g[0], "date": g[1], "changes": changes, "byDirectory": byDirectory, "byExtension": byExtension}
+  directoryObject = {}
+  for d in byDirectory:
+    name = d["directory"]
+    directoryObject[name] = d
+  return {"name": g[0], "date": g[1], "changes": changes, "byDirectory": directoryObject}
 
 def parse_line(lGroup):
   g = lGroup.groups()
@@ -72,7 +75,7 @@ def getDirectory(fName):
   if m:
     return m.groups()[0]
   else:
-    return ""
+    return "/"
 
 def getExtension(fName):
   if fName[-5:] == ".d.ts":
