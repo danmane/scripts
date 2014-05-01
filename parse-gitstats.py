@@ -18,12 +18,20 @@ def main():
     seconds = delta.total_seconds()
     days = seconds / 60 / 60 / 24
     c["day_delta"] = days
+    c["additions"] = 0
+    c["deletions"] = 0
+    for ch in c["changes"]:
+      c["additions"] += ch["additions"]
+      c["deletions"] += ch["deletions"]
 
   commits = sorted(commits, key=lambda c: c["day_delta"])
 
   i=0
+  loc = 0
   for c in commits:
+    loc += c["additions"] - c["deletions"]
     c["commit_number"] = i
+    c["lines_of_code"] = loc
     i+=1
   # changes = [c for commit in commits for c in commit["changes"]]
   # changesByFile = groupAndMergeChangesByAggregator(changes, "fileName", ["fileName", "directory", "extension"])
